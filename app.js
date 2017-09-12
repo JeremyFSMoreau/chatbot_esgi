@@ -26,8 +26,18 @@ var bot = new botbuilder.UniversalBot(connector, function(session) {
     bot.on('typing', function(){
         session.send("J'ai l'impression que vous essayez de me dire quelque chose...");
     });
-    bot.on('conversationUpdate', function(activity){
-        console.log(JSON.stringify(activity));
+    bot.on('conversationUpdate', function(message){
+        if(message.membersAdded && message.membersAdded.length > 0)
+        {
+            var membersAdded = message.membersAdded
+            .map(function(x){
+                var isSelf = x.id ==message.address.bot.id;
+                return (isSelf ? message.address.bot.name : x.name) || ' ' + '(Id = ' + x.id + ')';
+            }).join(', ');
+            bot.send(new botbuilder.Message()
+                .address(message.address)
+                .text('Bienvenue ' + membersAdded));
+        }
     });
     
 
