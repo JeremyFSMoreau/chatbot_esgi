@@ -4,7 +4,7 @@ var botbuilder = require('botbuilder');
 // setup restify 
 
 var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3980, function() {
+server.listen(process.env.port || process.env.PORT || 3988, function() {
     console.log('% bot started at %', server.name, server.url)
 });
 
@@ -21,8 +21,7 @@ server.post('/api/messages', connector.listen());
 var bot = new botbuilder.UniversalBot(connector, function(session) {
     //session.send('You have tapped: %s | [Length: %s]', session.message.text, session.message.text.length);
     
-    session.send(`You have tapped : ${session.message.text}`);
-    session.send(`The type of message is :${session.message.type}`);
+    session.send(`Vous avez écrit : ${session.message.text}`);
     bot.on('typing', function(){
         session.send("J'ai l'impression que vous essayez de me dire quelque chose...");
     });
@@ -36,9 +35,22 @@ var bot = new botbuilder.UniversalBot(connector, function(session) {
             }).join(', ');
             bot.send(new botbuilder.Message()
                 .address(message.address)
-                .text('Bienvenue ' + membersAdded));
+                .text('L\'utilisateur ' + membersAdded + ' a rejoint la conversation. Bienvenue ;)'));
+        }
+
+        if (message.membersRemoved && message.membersRemoved.length > 0) {
+            var membersRemoved = message.membersRemoved
+                .map(function (x) {
+                    var isSelf = x.id === message.address.bot.id;
+                    return (isSelf ? message.address.bot.name : x.name) || '' + ' (Id: ' + x.id + ')';
+                }).join(', ');    
+            bot.send(new botbuilder.Message()
+                .address(message.address)
+                .text(membersRemoved + 'a quitté la conversation. A bientôt !'));
         }
     });
+
+    
     
 
     // session.send(JSON.stringify(session.dialogData));
