@@ -4,7 +4,7 @@ var botbuilder = require('botbuilder');
 // setup restify 
 
 var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3988, function() {
+server.listen(process.env.port || process.env.PORT || 3989, function() {
     console.log('% bot started at %', server.name, server.url)
 });
 
@@ -20,11 +20,11 @@ server.post('/api/messages', connector.listen());
 // Reply by echoing
 var bot = new botbuilder.UniversalBot(connector, function(session) {
     //session.send('You have tapped: %s | [Length: %s]', session.message.text, session.message.text.length);
-    
-    session.send(`Vous avez écrit : ${session.message.text}`);
-    bot.on('typing', function(){
-        session.send("J'ai l'impression que vous essayez de me dire quelque chose...");
-    });
+    session.beginDialog('greetings');
+    // session.send(`Vous avez écrit : ${session.message.text}`);
+    // bot.on('typing', function(){
+    //     session.send("J'ai l'impression que vous essayez de me dire quelque chose...");
+    // });
     bot.on('conversationUpdate', function(message){
         if(message.membersAdded && message.membersAdded.length > 0)
         {
@@ -51,10 +51,26 @@ var bot = new botbuilder.UniversalBot(connector, function(session) {
     });
 
     
-    
-
-    // session.send(JSON.stringify(session.dialogData));
-    // session.send(JSON.stringify(session.sessionState));
-    // session.send(JSON.stringify(session.conversationData));
-    // session.send(JSON.stringify(session.userData));
 });
+
+bot.dialog('greetings', [
+    function (session) {
+        session.send("Bienvenue dans l'interface de réservation du restaurant !");
+        botbuilder.Prompts.time(session, "Merci de fournir la date et l'heure de votre réservation");
+    },
+    function (session, results) {
+        session.dialogData.reservationDate = botbuilder.EntityRecognizer.resolveTime([results.response]);
+        botbuilder.Prompts.text(session, "Combien de personnes seront conviés à ce repas ?");
+    },
+    function (session, results) {
+        session.dialogData.partySize = results.response;
+        botbuilder.Prompts.text(session, "Sous quel nom devons nous valider la réservation ?");
+    },
+    function (session, results) {
+        session.dialogData.reservationName = results.response;
+
+       // Process request and display reservation details
+        session.send(`Reservation confirmée. Détails de la réservation: <br/>Jour: ${session.dialogData.reservationDate} <br/>Nombre de personnes: ${session.dialogData.partySize} <br/>Nom de la réservation: ${session.dialogData.reservationName}`);
+        session.endDialog();
+    }
+]);
