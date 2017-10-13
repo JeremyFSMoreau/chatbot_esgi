@@ -5,7 +5,7 @@ var cognitiveservices = require('botbuilder-cognitiveservices');
 // setup restify
 
 var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3990, function() {
+server.listen(process.env.port || process.env.PORT || 3989, function() {
     console.log('% bot started at %', server.name, server.url)
 });
 
@@ -19,7 +19,7 @@ var connector = new botbuilder.ChatConnector({
 server.post('/api/messages', connector.listen());
 
 // Reply by echoing
-var bot = new botbuilder.UniversalBot(connector, function(session) {    
+var bot = new botbuilder.UniversalBot(connector, function(session) { 
     return session.beginDialog('alarme');    
 });
 bot.dialog('alarme',require('./dialogs/alarm'));
